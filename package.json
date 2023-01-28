@@ -1,0 +1,31 @@
+{
+  "name": "@evolify/eth-sdk",
+  "version": "0.1.0",
+  "author": "孤狼 <wolf@evolify.cn>",
+  "description": "",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "stub": "unbuild --stub"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {
+    "unbuild": "^1.0.2"
+  }
+}
