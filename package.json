@@ -1,5 +1,5 @@
 {
-  "name": "@evolify/eth-sdk",
+  "name": "@evolify/eth",
   "version": "0.1.0",
   "author": "孤狼 <wolf@evolify.cn>",
   "description": "",
@@ -26,6 +26,12 @@
   "keywords": [],
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^18.13.0",
     "unbuild": "^1.0.2"
+  },
+  "dependencies": {
+    "@ethersproject/abi": "^5",
+    "@ethersproject/abstract-provider": "^5",
+    "ethers": "^5.7.2"
   }
 }
