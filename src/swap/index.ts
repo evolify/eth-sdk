@@ -5,16 +5,18 @@ import { parseEther, parseUnits } from "ethers/lib/utils"
 import { Factory, Router } from "./contract"
 import { Token } from "../token"
 import { TokenOptions } from "../token/types"
+import { Chain } from "../types"
 
-type SwapConfigType = typeof SwapConfig.pancake & {usdDecimals?: number}
+type SwapConfigType = typeof SwapConfig.pancake & { usdDecimals?: number }
 
 export class Swap {
   factory: SwapFactory
   router: SwapRouter
   WETH: string
   USDT: string
-  chain: string
+  chain: Chain
   scan: string
+  unit = "ETH"
   wallet: Wallet
   config: SwapConfigType
   balance = 0
@@ -37,16 +39,18 @@ export class Swap {
     this.USDT = config.USDT
     // May faster than await this.router.WETH()
     this.WETH = config.WETH
-    this.chain = config.chain
+    this.chain = config.chain as Chain
     this.scan = config.scan
-    if(config.usdDecimals){
+    this.unit = config.unit
+    if (config.usdDecimals) {
       this.usdDecimals = config.usdDecimals
     }
+    this.start()
   }
 
   connect(wallet: Wallet) {
-    this.router.connect(wallet)
-    this.wallet = wallet
+    this.wallet = wallet.connect(this.router.provider)
+    this.router = this.router.connect(this.wallet) as SwapRouter
     return this
   }
 
@@ -108,8 +112,8 @@ export class Swap {
       const tx = await this.router.swapExactTokensForETH(
         value,
         amountOutMin,
-        this.getPath(token, lpUSD),
-        "wallet",
+        this.getPath(token, lpUSD, true),
+        this.wallet.address,
         deadline,
         {
           gasLimit: gasLimit,
@@ -188,11 +192,17 @@ export class Swap {
     return this.price
   }
 
-  token(address: string, options: TokenOptions = {}){
-    return new Token(address, {
-      ...options,
-      swap: this 
-    })
+  async token(address: string, options: TokenOptions = {}) {
+    try {
+      const token = new Token(address, {
+        ...options,
+        swap: this,
+      })
+      await token.init()
+      return token
+    } catch {
+      return null
+    }
   }
 
   scanTx(txHash: string) {
@@ -237,3 +247,9 @@ export class Swap {
 export const pancake = new Swap(SwapConfig.pancake)
 
 export const sushiArb = new Swap(SwapConfig.arb)
+
+export const swaps = [pancake, sushiArb]
+
+export function getSwap(chain: Chain) {
+  return [pancake, sushiArb].find(t => t.chain === chain)
+}

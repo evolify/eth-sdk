@@ -11,9 +11,9 @@ export class Token {
   pair: SwapPair
   address: string
   lpUSD: boolean
-  gasLimit = 750000
+  gasLimit = 500000
   gasPrice = 5
-  slippage = 15
+  slippage = 10
   decimals: number
   abi: string[]
   contract: IERC20
@@ -24,9 +24,14 @@ export class Token {
   rate = BigNumber.from(0)
   _onBalanceChange?: Function
   _onSwap?: (options: SwapEventOptions) => void
+  _onPriceChange?: (price: number, oldPrice: number) => void
 
   get balanceValue() {
     return this.formatUnits(this.balance)
+  }
+
+  get rateValue() {
+    return this.formatUnits(this.rate)
   }
 
   get rateEmpty() {
@@ -54,10 +59,11 @@ export class Token {
     {
       swap = pancake,
       decimals = 18,
-      slippage = 15,
+      slippage = 10,
       lpUSD = false,
       onSwap,
       onBalanceChange,
+      onPriceChange,
     }: TokenOptions = {}
   ) {
     this.lpUSD = lpUSD
@@ -65,8 +71,11 @@ export class Token {
     this.decimals = decimals
     this.slippage = slippage
     this.swap = swap
+    this.gasPrice = swap.config.gasPrice
+    this.gasLimit = swap.config.gasLimit
     this._onSwap = onSwap
     this._onBalanceChange = onBalanceChange
+    this._onPriceChange = onPriceChange
     this.contract = erc20(address, swap.router.provider)
   }
 
@@ -213,6 +222,12 @@ export class Token {
     return res
   }
 
+  async ensureSigner(){
+    if(!this.contract.signer){
+      this.contract = this.contract.connect(this.swap.wallet) as IERC20
+    }
+  }
+
   async ensureAllowance() {
     if (!this.swap.wallet) {
       return false
@@ -230,6 +245,7 @@ export class Token {
   }
 
   async approve() {
+    this.ensureSigner()
     try {
       const tx = await this.contract.approve(
         this.swap.router.address,
@@ -282,6 +298,9 @@ export class Token {
     if (amount > 0 && this.swap.price > 0) {
       const val = this.swap.price / amount
       if (val !== this.price) {
+        if (this._onPriceChange) {
+          this._onPriceChange(val, this.price)
+        }
         this.price = val
       }
     } else {
@@ -295,8 +314,8 @@ export class Token {
       return 0
     }
     const res = await this.contract.balanceOf(this.swap.wallet.address)
-    this.balance = res
     if (!res.eq(this.balance)) {
+      this.balance = res
       if (this._onBalanceChange) {
         this._onBalanceChange(this.balance)
       }
@@ -327,9 +346,16 @@ export class Token {
     const currentPrice = this.swap.price / +this.formatUnits(currentRate)
     const wethValue = +ethers.utils.formatEther(wethAmount)
     this.rate = currentRate
-    this.price = currentPrice
+    if (this.price !== currentPrice) {
+      if (this._onPriceChange) {
+        this._onPriceChange(currentPrice, this.price)
+      }
+      this.price = currentPrice
+    }
     if (this._onSwap) {
       this._onSwap({
+        address: this.address,
+        symbol: this.symbol,
         type,
         wethValue,
         tokenValue: Number(this.formatUnits(tokenAmount)),
@@ -341,13 +367,23 @@ export class Token {
         rateValue: currentRateValue,
         from,
         to,
+        timestamp: Date.now(),
         txHash,
       })
     }
   }
 
+  onSwap(cb: (options: SwapEventOptions) => void) {
+    this._onSwap = cb
+  }
+
   onBalanceChange(cb: (balance: string) => any) {
     this._onBalanceChange = cb
+    return this
+  }
+
+  onPriceChange(cb: (price: number, oldPrice: number) => void) {
+    this._onPriceChange = cb
     return this
   }
 
@@ -356,5 +392,9 @@ export class Token {
     if (this.pair) {
       this.pair.removeAllListeners()
     }
+  }
+
+  scan(){
+    return this.swap.scanToken(this.address)
   }
 }

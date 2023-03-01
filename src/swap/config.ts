@@ -33,6 +33,7 @@ export const SwapConfig = {
     scan: "https://bscscan.com",
     gasLimit: 500000,
     gasPrice: 5, // gwei
+    unit: "BNB",
   },
   arb: {
     chain: "arb",
@@ -45,6 +46,17 @@ export const SwapConfig = {
     scan: "https://arbiscan.io",
     gasLimit: 5000000,
     gasPrice: 0.1, // gwei
+    unit: "ETH"
+  },
+  op: {
+    chain: "op",
+    factory: "",
+    router: "0xb555edf5dcf85f42ceef1f3630a52a108e55a654",
+    WETH: "0x4200000000000000000000000000000000000006",
+    USDT: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+    rpcNode: "https://mainnet.optimism.io",
+    scan: "https://optimistic.etherscan.io/",
+    unit: "ETH"
   },
   heco: {
     chain: "heco",
@@ -54,6 +66,7 @@ export const SwapConfig = {
     WETH: "0x5545153CCFcA01fbd7Dd11C0b23ba694D9509A6F",
     USDT: "0xa71edc38d189767582c38a3145b5873052c3e47a",
     rpcNode: "https://http-mainnet.hecochain.com",
-    scan: "https://arbiscan.io"
+    scan: "https://arbiscan.io",
+    unit: "HT"
   },
 }

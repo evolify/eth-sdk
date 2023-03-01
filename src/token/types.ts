@@ -53,6 +53,8 @@ export interface SwapPair extends Contract {
 }
 
 export interface SwapEventOptions {
+  address: string
+  symbol: string
   type: "buy" | "sell"
   wethValue: number
   tokenValue: number
@@ -64,6 +66,7 @@ export interface SwapEventOptions {
   rateValue: number
   from: string
   to: string
+  timestamp: number
   txHash: string
 }
 
@@ -74,4 +77,5 @@ export interface TokenOptions {
   lpUSD?: boolean
   onSwap?: (options: SwapEventOptions) => void
   onBalanceChange?: Function
+  onPriceChange?: (price: number, oldPrice: number) => void
 }
