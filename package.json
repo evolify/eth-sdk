@@ -1,6 +1,6 @@
 {
   "name": "@evolify/eth",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "孤狼 <wolf@evolify.cn>",
   "description": "",
   "main": "./dist/index.cjs",
