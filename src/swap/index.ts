@@ -109,7 +109,9 @@ export class Swap {
     }: SwapOptions = {}
   ) {
     try {
-      const tx = await this.router.swapExactTokensForETH(
+      // ? swapExactTokensForETH or swapExactTokensForETHSupportingFeeOnTransferTokens
+      // const tx = await this.router.swapExactTokensForETH(
+      const tx = await this.router.swapExactTokensForETHSupportingFeeOnTransferTokens(
         value,
         amountOutMin,
         this.getPath(token, lpUSD, true),
