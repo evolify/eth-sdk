@@ -51,6 +51,7 @@ export class Swap {
   connect(wallet: Wallet) {
     this.wallet = wallet.connect(this.router.provider)
     this.router = this.router.connect(this.wallet) as SwapRouter
+    this.getBalance()
     return this
   }
 
