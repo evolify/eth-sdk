@@ -91,6 +91,7 @@ export class Token {
         : BigNumber.from(0),
     ])
     this.getBalance()
+    this.waitForPair()
     return this
   }
 
